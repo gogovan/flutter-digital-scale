@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir -p ./../../.git/hooks
+cp ./prepare-commit-msg ./../../.git/hooks/prepare-commit-msg
+chmod u+x ./../../.git/hooks/prepare-commit-msg

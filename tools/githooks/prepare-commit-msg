@@ -1,0 +1,40 @@
+#!/bin/bash
+
+COMMIT_MSG_FILE=$1
+
+if [ -z "$BRANCHES_TO_SKIP" ]
+then
+  BRANCHES_TO_SKIP='trunk release'
+fi
+
+# Retrieve the branch name without the description, in the pattern of xx/XX-000
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+
+for BRANCH_TO_SKIP in $BRANCHES_TO_SKIP;
+do
+  BRANCH_EXCLUDED=$(echo $BRANCH_NAME | grep -c "^$BRANCH_TO_SKIP")
+
+  if [ $BRANCH_EXCLUDED -eq 1 ]
+  then
+    echo "Currently on branch $BRANCH_NAME, skipping branch name prepend."
+    exit 0
+  fi
+done
+
+# Retrieve the branch prefix without the description, in the pattern of xx/XX-000
+BRANCH_PREFIX=$(echo $BRANCH_NAME | grep -oE '[a-zA-Z]+\/[a-zA-Z]+-[0-9]+')
+
+BRANCH_PREFIX=$(echo $BRANCH_PREFIX | awk -F'/' '{print ""$1 ": "$2}')
+
+# Escape the whitespace character in the branch prefix
+BRANCH_PREFIX_ESCAPED=$(echo $BRANCH_PREFIX | sed -E 's/ /[[:space:]]/g')
+
+BRANCH_PREFIX_COUNT_IN_COMMIT_MSG=$(grep -c $BRANCH_PREFIX_ESCAPED $COMMIT_MSG_FILE)
+
+if [ -n "$BRANCH_PREFIX" ] && [ $BRANCH_PREFIX_COUNT_IN_COMMIT_MSG -lt 1 ]
+then
+  echo "Prepending '$BRANCH_PREFIX' to your commit message."
+  sed -i .bak -E "1s/^/$BRANCH_PREFIX: /" $COMMIT_MSG_FILE
+else
+  echo "The string '$BRANCH_PREFIX' already exists in the commit message. Skipping prepend."
+fi
