@@ -1,39 +1,53 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flutter_digital_scale
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Integrate Digital scales with Flutter apps.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+# Supported Digital scales
+- Wuxianliang WXL-T12
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Getting Started
 
-## Features
+1. Update your app `android/app/build.gradle` and update minSdkVersion to at least 21
+```groovy
+defaultConfig {
+    applicationId "com.example.app"
+    minSdkVersion 21
+    // ...
+}
+```
+2. Setup required permissions according to OS and technology:
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## Bluetooth
+### Android
 
-## Getting started
+1. Add the following to your main `AndroidManifest.xml`.
+   See [Android Developers](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions)
+   and [this StackOverflow answer](https://stackoverflow.com/a/70793272)
+   for more information about permission settings.
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```xml
 
-## Usage
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.flutter_label_printer_example">
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+    <uses-feature android:name="android.hardware.bluetooth" android:required="true" />
 
-```dart
-const like = 'sample';
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+    <!-- ... -->
+</manifest>
 ```
 
-## Additional information
+### iOS
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+1. Include usage description keys for Bluetooth into `info.plist`.
+   ![iOS XCode Bluetooth permission instruction](README_img/ios-bluetooth-perm.png)
+
