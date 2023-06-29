@@ -1,5 +1,6 @@
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
+import 'package:flutter_digital_scale/weight.dart';
 
 /// Common interface for all Digital Scales.
 abstract class DigitalScaleInterface {
@@ -23,30 +24,4 @@ abstract class DigitalScaleInterface {
 
   /// Continuously measure the weight and return the values as a Dart Stream.
   Stream<Weight> getWeightStream();
-}
-
-enum WeightUnit {
-  grams,
-  kilograms,
-  pounds;
-}
-
-class Weight {
-  Weight(this.value, this.unit);
-
-  double value;
-  WeightUnit unit;
-
-  double toKilograms() {
-    switch (unit) {
-      case WeightUnit.kilograms:
-        return value;
-      // ignore: no-magic-number, unit conversions are fixed.
-      case WeightUnit.grams:
-        return value / 1000;
-      // ignore: no-magic-number, unit conversions are fixed.
-      case WeightUnit.pounds:
-        return value * 0.45359237;
-    }
-  }
 }

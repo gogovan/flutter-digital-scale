@@ -5,6 +5,7 @@ import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart'
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
 import 'package:flutter_digital_scale/digital_scale_interface.dart';
+import 'package:flutter_digital_scale/weight.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
