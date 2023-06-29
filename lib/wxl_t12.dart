@@ -119,7 +119,10 @@ class WXLT12 implements DigitalScaleInterface {
           return [value, unit];
         })
         .where((event) => event.first != null && event[1] != null)
-        .map((event) => Weight(event.first! as double, event[1]! as WeightUnit));
+        .map(
+          // ignore: avoid-non-null-assertion, checked not null
+          (event) => Weight(event.first! as double, event[1]! as WeightUnit),
+        );
 
     _weights = weights;
 
