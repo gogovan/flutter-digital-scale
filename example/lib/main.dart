@@ -76,7 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void getStabilizedWeight() {}
+  void getStabilizedWeight() {
+    setState(() {
+      stabilizedWeight = scale.getStabilizedWeight(10, const Duration(seconds: 10));
+    });
+  }
 
   @override
   void dispose() {
