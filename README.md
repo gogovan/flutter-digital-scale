@@ -51,3 +51,4 @@ defaultConfig {
 1. Include usage description keys for Bluetooth into `info.plist`.
    ![iOS XCode Bluetooth permission instruction](README_img/ios-bluetooth-perm.png)
 
+## Usage

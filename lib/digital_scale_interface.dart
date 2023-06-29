@@ -5,7 +5,9 @@ import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart'
 abstract class DigitalScaleInterface {
   /// Search and connect to a Digital scale.
   /// If multiple supported digital scales are found, only one of them will be connected.
-  Future<void> connect(void Function(BluetoothDevice device, BluetoothService service) onConnected);
+  Future<void> connect(
+    void Function(BluetoothDevice device, BluetoothService service) onConnected,
+  );
 
   /// Disconnect from a connected Digital scale.
   Future<void> disconnect();
@@ -24,7 +26,9 @@ abstract class DigitalScaleInterface {
 }
 
 enum WeightUnit {
-  grams, kilograms, pounds;
+  grams,
+  kilograms,
+  pounds;
 }
 
 class Weight {
@@ -35,11 +39,14 @@ class Weight {
 
   double toKilograms() {
     switch (unit) {
-      case WeightUnit.kilograms: return value;
+      case WeightUnit.kilograms:
+        return value;
       // ignore: no-magic-number, unit conversions are fixed.
-      case WeightUnit.grams: return value / 1000;
-    // ignore: no-magic-number, unit conversions are fixed.
-      case WeightUnit.pounds: return value * 0.45359237;
+      case WeightUnit.grams:
+        return value / 1000;
+      // ignore: no-magic-number, unit conversions are fixed.
+      case WeightUnit.pounds:
+        return value * 0.45359237;
     }
   }
 }
