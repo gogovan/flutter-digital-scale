@@ -52,3 +52,15 @@ defaultConfig {
    ![iOS XCode Bluetooth permission instruction](README_img/ios-bluetooth-perm.png)
 
 ## Usage
+1. Choose an implementation that matches your digital scale device, and create an instance of it. i.e. `WXLT12()`
+2. Connect to the digital scale. This will search for the scale nearby your scale and connect to it. Once connected the callback will be invoked.
+```dart
+scale.connect(const Duration(seconds: 30), () {
+   // do something
+});
+```
+3. To get the weight readings from your digital scale, use one of the following:
+   1. `getWeightStream()` returns a dart Stream which continuously receive data from your scale. Oftentimes this is the real time output of the scale. Check with your manufacturer if this feature is supported and the exact behaviour.
+   2. `getWeight()` returns the weight value as measured at the moment of its call. However you may want to use `getStabilizedWeight` instead.
+   3. `getStabilizedWeight()` returns a weight that has been stabilized. In practice, when you use the scale by placing an object on it, the weight value will oscillate erratically before stabilizing due to the extra weight added by the action of placing the object. This function returns the weight of the object only when the weight reading has stopped moving. You can specify number of samples to wait until it is considered stabilized.
+4. Disconnect your scale when you are done with it using `disconnect()`. Otherwise there may be lingering connections.

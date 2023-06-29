@@ -26,7 +26,7 @@ class WXLT12 implements DigitalScaleInterface {
   @override
   Future<void> connect(
     Duration timeout,
-    void Function(BluetoothDevice device, BluetoothService service) onConnected,
+    void Function() onConnected,
   ) async {
     _searchedDevices =
         _btSearcher.search().timeout(timeout).listen((event) async {
@@ -52,7 +52,7 @@ class WXLT12 implements DigitalScaleInterface {
               )
               .first;
 
-          onConnected(btDevice, selectedService);
+          onConnected();
         }
       }
     });
