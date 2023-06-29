@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _connectPrinter() {
-    scale.connect((device, service) {
+    scale.connect(const Duration(seconds: 30), (device, service) {
       stream = scale.getWeightStream();
       setState(() {
         status = 'Printer connected';
@@ -78,7 +78,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void getStabilizedWeight() {
     setState(() {
-      stabilizedWeight = scale.getStabilizedWeight(10, const Duration(seconds: 10));
+      stabilizedWeight =
+          scale.getStabilizedWeight(10, const Duration(seconds: 10));
     });
   }
 
