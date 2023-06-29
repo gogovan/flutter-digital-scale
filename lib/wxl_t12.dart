@@ -28,7 +28,8 @@ class WXLT12 implements DigitalScaleInterface {
     Duration timeout,
     void Function(BluetoothDevice device, BluetoothService service) onConnected,
   ) async {
-    _searchedDevices = _btSearcher.search().timeout(timeout).listen((event) async {
+    _searchedDevices =
+        _btSearcher.search().timeout(timeout).listen((event) async {
       final device = event.where((element) => element.name == _bluetoothName);
 
       if (device.isNotEmpty) {
@@ -110,10 +111,15 @@ class WXLT12 implements DigitalScaleInterface {
         .readAsStream(_serviceUuid, _characteristicUuid)
         .asBroadcastStream()
         .map((event) {
-      final str = String.fromCharCodes(event);
+          final str = String.fromCharCodes(event);
 
-      return Weight(1, WeightUnit.kilograms);
-    });
+          final value = double.tryParse(str.substring(6, 14));
+          final unit = WeightUnit.fromString(str.substring(14, 16));
+
+          return [value, unit];
+        })
+        .where((event) => event.first != null && event[1] != null)
+        .map((event) => Weight(event.first! as double, event[1]! as WeightUnit));
 
     _weights = weights;
 

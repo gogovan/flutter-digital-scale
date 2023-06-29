@@ -2,6 +2,20 @@ enum WeightUnit {
   grams,
   kilograms,
   pounds;
+
+  static WeightUnit? fromString(String s) {
+    final strim = s.trim();
+
+    if (strim == 'kg') {
+      return WeightUnit.kilograms;
+    } else if (strim == 'g') {
+      return WeightUnit.grams;
+    } else if (strim == 'lb') {
+      return WeightUnit.pounds;
+    } else {
+      return null;
+    }
+  }
 }
 
 class Weight {
