@@ -78,11 +78,11 @@ class WXLT12 implements DigitalScaleInterface {
 
     final stabilizedWeight = Completer<Weight>();
 
-    var lastWeight = Weight(-999, WeightUnit.kilograms);
+    var lastWeight = Weight(0, WeightUnit.kilograms);
     var streak = 0;
 
     final subscription = source.timeout(timeout).listen((event) {
-      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01) {
+      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01 || event.toKilograms() < 0.01) {
         lastWeight = event;
         streak = 0;
       } else {

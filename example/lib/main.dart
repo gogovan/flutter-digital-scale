@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void getStabilizedWeight() {
     setState(() {
       stabilizedWeight =
-          scale.getStabilizedWeight(3, const Duration(seconds: 10));
+          scale.getStabilizedWeight(20, const Duration(seconds: 10));
     });
   }
 
