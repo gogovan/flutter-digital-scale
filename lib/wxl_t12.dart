@@ -6,6 +6,7 @@ import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart'
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
 import 'package:flutter_digital_scale/digital_scale_interface.dart';
 import 'package:flutter_digital_scale/weight.dart';
+import 'package:logging/logging.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
@@ -29,30 +30,37 @@ class WXLT12 implements DigitalScaleInterface {
     void Function() onConnected,
   ) async {
     _searchedDevices =
-        _btSearcher.search().timeout(timeout).listen((event) async {
+        _btSearcher.search().listen(cancelOnError: true, (event) async {
       final device = event.where((element) => element.name == _bluetoothName);
 
       if (device.isNotEmpty) {
+        await _searchedDevices?.cancel();
         final btDevice = BluetoothDevice(_btSearcher, device.first);
-        final services = await btDevice.getServices();
-        final service = services.where(
-          (s) =>
-              s.serviceId == _serviceUuid &&
-              s.characteristics
-                  .any((c) => c.characteristicId == _characteristicUuid),
-        );
+        if (await btDevice.connect()) {
+          // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
+          // ignore: avoid-ignoring-return-values, not needed.
+          await Future.delayed(const Duration(seconds: 1));
 
-        if (service.isNotEmpty) {
-          final selectedService = service.first;
+          final services = await btDevice.getServices();
+          final service = services.where(
+            (s) =>
+                s.serviceId == _serviceUuid &&
+                s.characteristics
+                    .any((c) => c.characteristicId == _characteristicUuid),
+          );
 
-          _btDevice = btDevice;
-          _btCharacteristic = selectedService.characteristics
-              .where(
-                (element) => element.characteristicId == _characteristicUuid,
-              )
-              .first;
+          if (service.isNotEmpty) {
+            final selectedService = service.first;
 
-          onConnected();
+            _btDevice = btDevice;
+            _btCharacteristic = selectedService.characteristics
+                .where(
+                  (element) => element.characteristicId == _characteristicUuid,
+                )
+                .first;
+
+            onConnected();
+          }
         }
       }
     });
