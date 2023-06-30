@@ -82,7 +82,8 @@ class WXLT12 implements DigitalScaleInterface {
     var streak = 0;
 
     final subscription = source.timeout(timeout).listen((event) {
-      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01 || event.toKilograms() < 0.01) {
+      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01 ||
+          event.toKilograms() < 0.01) {
         lastWeight = event;
         streak = 0;
       } else {
@@ -121,7 +122,8 @@ class WXLT12 implements DigitalScaleInterface {
         .map((event) {
           final str = String.fromCharCodes(event);
 
-          final value = double.tryParse(str.substring(6, 14).replaceAll(' ', ''));
+          final value =
+              double.tryParse(str.substring(6, 14).replaceAll(' ', ''));
           final unit = WeightUnit.fromString(str.substring(14, 16));
 
           return [value, unit];
