@@ -1,5 +1,3 @@
-import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
-import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_digital_scale/weight.dart';
 
 /// Common interface for all Digital Scales.
