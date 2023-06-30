@@ -31,7 +31,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final scale = WXLT12();
 
-  var status = 'Finding printer...';
+  var status = 'Finding Digital scale...';
   Stream<Weight>? stream;
   Future<Weight>? stabilizedWeight;
 
@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
     scale.connect(const Duration(seconds: 30), () {
       stream = scale.getWeightStream();
       setState(() {
-        status = 'Printer connected';
+        status = 'Digital scale connected';
       });
     });
   }
@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
         StreamBuilder<Weight>(
           stream: stream,
           builder: (context, snapshot) => Text(
-            '${snapshot.data?.value} ${snapshot.data?.unit}',
+            '${snapshot.data?.value} ${snapshot.data?.unit.name}',
           ),
         ),
         ElevatedButton(
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         FutureBuilder(
           future: stabilizedWeight,
           builder: (context, snapshot) => Text(
-            '${snapshot.data?.value} ${snapshot.data?.unit}',
+            '${snapshot.data?.value} ${snapshot.data?.unit.name}',
           ),
         ),
       ]),
