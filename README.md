@@ -1,39 +1,66 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flutter_digital_scale
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Integrate Digital scales with Flutter apps.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+# Supported Digital scales
+- Wuxianliang WXL-T12
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Getting Started
 
-## Features
+1. Update your app `android/app/build.gradle` and update minSdkVersion to at least 21
+```groovy
+defaultConfig {
+    applicationId "com.example.app"
+    minSdkVersion 21
+    // ...
+}
+```
+2. Setup required permissions according to OS and technology:
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## Bluetooth
+### Android
 
-## Getting started
+1. Add the following to your main `AndroidManifest.xml`.
+   See [Android Developers](https://developer.android.com/guide/topics/connectivity/bluetooth/permissions)
+   and [this StackOverflow answer](https://stackoverflow.com/a/70793272)
+   for more information about permission settings.
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```xml
 
-## Usage
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.flutter_label_printer_example">
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+    <uses-feature android:name="android.hardware.bluetooth" android:required="true" />
 
-```dart
-const like = 'sample';
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation" tools:targetApi="s" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+    <!-- ... -->
+</manifest>
 ```
 
-## Additional information
+### iOS
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+1. Include usage description keys for Bluetooth into `info.plist`.
+   ![iOS XCode Bluetooth permission instruction](README_img/ios-bluetooth-perm.png)
+
+## Usage
+1. Choose an implementation that matches your digital scale device, and create an instance of it. i.e. `WXLT12()`
+2. Connect to the digital scale. This will search for the scale nearby your scale and connect to it. Once connected the callback will be invoked.
+```dart
+scale.connect(const Duration(seconds: 30), () {
+   // do something
+});
+```
+3. To get the weight readings from your digital scale, use one of the following:
+   1. `getWeightStream()` returns a dart Stream which continuously receive data from your scale. Oftentimes this is the real time output of the scale. Check with your manufacturer if this feature is supported and the exact behaviour.
+   2. `getWeight()` returns the weight value as measured at the moment of its call. However you may want to use `getStabilizedWeight` instead.
+   3. `getStabilizedWeight()` returns a weight that has been stabilized. In practice, when you use the scale by placing an object on it, the weight value will oscillate erratically before stabilizing due to the extra weight added by the action of placing the object. This function returns the weight of the object only when the weight reading has stopped moving. You can specify number of samples to wait until it is considered stabilized.
+4. Disconnect your scale when you are done with it using `disconnect()`. Otherwise there may be lingering connections.

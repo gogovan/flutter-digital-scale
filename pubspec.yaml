@@ -12,6 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
   logging: ^1.1.0
+  flutter_device_searcher:
+    git:
+      url: https://github.com/gogovan/flutter-device-searcher.git
 
 dev_dependencies:
   flutter_test:
