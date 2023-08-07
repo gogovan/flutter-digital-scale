@@ -28,7 +28,6 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<void> connect(
-    Duration timeout,
     void Function() onConnected,
   ) async {
     _searchedDevices =

@@ -5,7 +5,6 @@ abstract class DigitalScaleInterface {
   /// Search and connect to a Digital scale.
   /// If multiple supported digital scales are found, only one of them will be connected.
   Future<void> connect(
-    Duration timeout,
     void Function() onConnected,
   );
 
