@@ -79,7 +79,8 @@ class WXLT12 implements DigitalScaleInterface {
     _connected = false;
   }
 
-  @override bool isConnected() => _connected;
+  @override
+  bool isConnected() => _connected;
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {
