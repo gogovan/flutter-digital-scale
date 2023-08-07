@@ -32,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final scale = WXLT12();
 
   var status = 'Finding Digital scale...';
-  Stream<Weight>? stream;
+  Stream<WeightStatus>? stream;
   Future<Weight>? stabilizedWeight;
 
   @override
@@ -58,10 +58,10 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(children: [
         Text(status),
         Text('Current Weight'),
-        StreamBuilder<Weight>(
+        StreamBuilder<WeightStatus>(
           stream: stream,
           builder: (context, snapshot) => Text(
-            '${snapshot.data?.value} ${snapshot.data?.unit.name}',
+            '${snapshot.data}',
           ),
         ),
         ElevatedButton(
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         FutureBuilder(
           future: stabilizedWeight,
           builder: (context, snapshot) => Text(
-            '${snapshot.data?.value} ${snapshot.data?.unit.name}',
+            '${snapshot.data}',
           ),
         ),
       ]),
@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void getStabilizedWeight() {
     setState(() {
       stabilizedWeight =
-          scale.getStabilizedWeight(20, const Duration(seconds: 10));
+          scale.getStabilizedWeight(const Duration(seconds: 10));
     });
   }
 

@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
 import 'package:flutter_digital_scale/digital_scale_interface.dart';
 import 'package:flutter_digital_scale/weight.dart';
+import 'package:rxdart/rxdart.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
@@ -20,8 +22,10 @@ class WXLT12 implements DigitalScaleInterface {
 
   StreamSubscription<List<BluetoothResult>>? _searchedDevices;
 
-  Stream<Weight>? _weights;
-  StreamSubscription<Weight>? _weightStream;
+  Stream<WeightStatus>? _weights;
+
+  /// Number of samples to collect until deciding that the weight is now stabilized.
+  int threshold = 10;
 
   @override
   Future<void> connect(
@@ -67,48 +71,27 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<void> disconnect() async {
-    await _weightStream?.cancel();
     await _searchedDevices?.cancel();
   }
 
   @override
-  Future<Weight> getStabilizedWeight(int threshold, Duration timeout) async {
+  Future<Weight> getStabilizedWeight(Duration timeout) async {
     final source = _weights ??= getWeightStream();
-
-    final stabilizedWeight = Completer<Weight>();
-
-    var lastWeight = Weight(0, WeightUnit.kilograms);
-    var streak = 0;
-
-    final subscription = source.timeout(timeout).listen((event) {
-      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01 ||
-          event.toKilograms() < 0.01) {
-        lastWeight = event;
-        streak = 0;
-      } else {
-        streak++;
-        if (streak >= threshold) {
-          stabilizedWeight.complete(event);
-        }
-      }
-    });
-
-    final finalWeight = await stabilizedWeight.future;
-
-    await subscription.cancel();
-
-    return finalWeight;
+    return source
+        .firstWhere((element) => element.stable)
+        .timeout(timeout)
+        .then((value) => value.weight);
   }
 
   @override
-  Future<Weight> getWeight() async {
+  Future<WeightStatus> getWeight() async {
     final source = _weights ??= getWeightStream();
 
     return source.first;
   }
 
   @override
-  Stream<Weight> getWeightStream() {
+  Stream<WeightStatus> getWeightStream() {
     final characteristic = _btCharacteristic;
     final device = _btDevice;
     if (device == null || characteristic == null) {
@@ -131,6 +114,13 @@ class WXLT12 implements DigitalScaleInterface {
         .map(
           // ignore: avoid-non-null-assertion, checked not null
           (event) => Weight(event.first! as double, event[1]! as WeightUnit),
+        )
+        .bufferCount(threshold, 1)
+        .map(
+          (items) => WeightStatus(
+            items.last,
+            stable: items.every((element) => element == items.last),
+          ),
         );
 
     _weights = weights;

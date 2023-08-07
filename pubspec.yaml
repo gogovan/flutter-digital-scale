@@ -15,6 +15,7 @@ dependencies:
   flutter_device_searcher:
     git:
       url: https://github.com/gogovan/flutter-device-searcher.git
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 enum WeightUnit {
   grams,
   kilograms,
@@ -18,11 +20,13 @@ enum WeightUnit {
   }
 }
 
+/// Represent a measured weight value with unit.
+@immutable
 class Weight {
-  Weight(this.value, this.unit);
+  const Weight(this.value, this.unit);
 
-  double value;
-  WeightUnit unit;
+  final double value;
+  final WeightUnit unit;
 
   double toKilograms() {
     switch (unit) {
@@ -36,4 +40,42 @@ class Weight {
         return value * 0.45359237;
     }
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Weight &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          unit == other.unit;
+
+  @override
+  int get hashCode => value.hashCode ^ unit.hashCode;
+
+  @override
+  String toString() => 'Weight{value: $value, unit: $unit}';
+}
+
+@immutable
+class WeightStatus {
+  const WeightStatus(this.weight, {required this.stable});
+
+  final Weight weight;
+
+  /// Whether the weight is stabilized.
+  final bool stable;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WeightStatus &&
+          runtimeType == other.runtimeType &&
+          weight == other.weight &&
+          stable == other.stable;
+
+  @override
+  int get hashCode => weight.hashCode ^ stable.hashCode;
+
+  @override
+  String toString() => 'WeightStatus{weight: $weight, stable: $stable}';
 }
