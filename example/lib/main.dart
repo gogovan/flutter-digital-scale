@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _connectPrinter() {
-    scale.connect(const Duration(seconds: 30), () {
+    scale.connect(() {
       stream = scale.getWeightStream();
       setState(() {
         status = 'Digital scale connected';
