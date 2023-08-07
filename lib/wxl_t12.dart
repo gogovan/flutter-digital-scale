@@ -26,6 +26,8 @@ class WXLT12 implements DigitalScaleInterface {
   /// Number of samples to collect until deciding that the weight is now stabilized.
   int threshold = 10;
 
+  bool _connected = false;
+
   @override
   Future<void> connect(
     void Function() onConnected,
@@ -60,7 +62,9 @@ class WXLT12 implements DigitalScaleInterface {
                 )
                 .first;
 
+            _connected = true;
             onConnected();
+            await _searchedDevices?.cancel();
           }
         }
       }
@@ -70,7 +74,12 @@ class WXLT12 implements DigitalScaleInterface {
   @override
   Future<void> disconnect() async {
     await _searchedDevices?.cancel();
+    _btDevice = null;
+    _btCharacteristic = null;
+    _connected = false;
   }
+
+  @override bool isConnected() => _connected;
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {

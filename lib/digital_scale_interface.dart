@@ -11,6 +11,8 @@ abstract class DigitalScaleInterface {
   /// Disconnect from a connected Digital scale.
   Future<void> disconnect();
 
+  bool isConnected();
+
   /// Get the instantaneous weight value and status from the digital scale.
   /// However, in typical usage you would likely want to use `getStabilizedWeight()` instead.
   Future<WeightStatus> getWeight();
