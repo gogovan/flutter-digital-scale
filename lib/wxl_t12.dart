@@ -47,8 +47,9 @@ class WXLT12 implements DigitalScaleInterface {
           final service = services.where(
             (s) =>
                 s.serviceId.contains(_refServiceUuid) &&
-                s.characteristics
-                    .any((c) => c.characteristicId.contains(_refCharacteristicUuid)),
+                s.characteristics.any(
+                  (c) => c.characteristicId.contains(_refCharacteristicUuid),
+                ),
           );
 
           if (service.isNotEmpty) {
@@ -57,7 +58,8 @@ class WXLT12 implements DigitalScaleInterface {
             _btDevice = btDevice;
             _btCharacteristic = selectedService.characteristics
                 .where(
-                  (element) => element.characteristicId.contains(_refCharacteristicUuid),
+                  (element) =>
+                      element.characteristicId.contains(_refCharacteristicUuid),
                 )
                 .first;
 
