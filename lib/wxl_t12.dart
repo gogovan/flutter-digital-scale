@@ -6,13 +6,13 @@ import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart'
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
 import 'package:flutter_digital_scale/digital_scale_interface.dart';
 import 'package:flutter_digital_scale/weight.dart';
+import 'package:rxdart/rxdart.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
   static const String _bluetoothName = 'WXL-T12.4.0';
-  static const String _serviceUuid = '0000ffe0-0000-1000-8000-00805f9b34fb';
-  static const String _characteristicUuid =
-      '0000ffe1-0000-1000-8000-00805f9b34fb';
+  static const String _refServiceUuid = 'ffe0';
+  static const String _refCharacteristicUuid = 'ffe1';
 
   final BluetoothSearcher _btSearcher = BluetoothSearcher();
   BluetoothDevice? _btDevice;
@@ -20,12 +20,15 @@ class WXLT12 implements DigitalScaleInterface {
 
   StreamSubscription<List<BluetoothResult>>? _searchedDevices;
 
-  Stream<Weight>? _weights;
-  StreamSubscription<Weight>? _weightStream;
+  Stream<WeightStatus>? _weights;
+
+  /// Number of samples to collect until deciding that the weight is now stabilized.
+  int threshold = 10;
+
+  bool _connected = false;
 
   @override
   Future<void> connect(
-    Duration timeout,
     void Function() onConnected,
   ) async {
     _searchedDevices =
@@ -43,9 +46,10 @@ class WXLT12 implements DigitalScaleInterface {
           final services = await btDevice.getServices();
           final service = services.where(
             (s) =>
-                s.serviceId == _serviceUuid &&
-                s.characteristics
-                    .any((c) => c.characteristicId == _characteristicUuid),
+                s.serviceId.contains(_refServiceUuid) &&
+                s.characteristics.any(
+                  (c) => c.characteristicId.contains(_refCharacteristicUuid),
+                ),
           );
 
           if (service.isNotEmpty) {
@@ -54,11 +58,14 @@ class WXLT12 implements DigitalScaleInterface {
             _btDevice = btDevice;
             _btCharacteristic = selectedService.characteristics
                 .where(
-                  (element) => element.characteristicId == _characteristicUuid,
+                  (element) =>
+                      element.characteristicId.contains(_refCharacteristicUuid),
                 )
                 .first;
 
+            _connected = true;
             onConnected();
+            await _searchedDevices?.cancel();
           }
         }
       }
@@ -67,48 +74,34 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<void> disconnect() async {
-    await _weightStream?.cancel();
     await _searchedDevices?.cancel();
+    await _btDevice?.disconnect();
+    _btDevice = null;
+    _btCharacteristic = null;
+    _connected = false;
   }
 
   @override
-  Future<Weight> getStabilizedWeight(int threshold, Duration timeout) async {
+  bool isConnected() => _connected;
+
+  @override
+  Future<Weight> getStabilizedWeight(Duration timeout) async {
     final source = _weights ??= getWeightStream();
-
-    final stabilizedWeight = Completer<Weight>();
-
-    var lastWeight = Weight(0, WeightUnit.kilograms);
-    var streak = 0;
-
-    final subscription = source.timeout(timeout).listen((event) {
-      if ((lastWeight.toKilograms() - event.toKilograms()).abs() > 0.01 ||
-          event.toKilograms() < 0.01) {
-        lastWeight = event;
-        streak = 0;
-      } else {
-        streak++;
-        if (streak >= threshold) {
-          stabilizedWeight.complete(event);
-        }
-      }
-    });
-
-    final finalWeight = await stabilizedWeight.future;
-
-    await subscription.cancel();
-
-    return finalWeight;
+    return source
+        .firstWhere((element) => element.stable)
+        .timeout(timeout)
+        .then((value) => value.weight);
   }
 
   @override
-  Future<Weight> getWeight() async {
+  Future<WeightStatus> getWeight() async {
     final source = _weights ??= getWeightStream();
 
     return source.first;
   }
 
   @override
-  Stream<Weight> getWeightStream() {
+  Stream<WeightStatus> getWeightStream() {
     final characteristic = _btCharacteristic;
     final device = _btDevice;
     if (device == null || characteristic == null) {
@@ -116,7 +109,7 @@ class WXLT12 implements DigitalScaleInterface {
     }
 
     final weights = device
-        .readAsStream(_serviceUuid, _characteristicUuid)
+        .readAsStream(characteristic.serviceId, characteristic.characteristicId)
         .asBroadcastStream()
         .map((event) {
           final str = String.fromCharCodes(event);
@@ -131,6 +124,13 @@ class WXLT12 implements DigitalScaleInterface {
         .map(
           // ignore: avoid-non-null-assertion, checked not null
           (event) => Weight(event.first! as double, event[1]! as WeightUnit),
+        )
+        .bufferCount(threshold, 1)
+        .map(
+          (items) => WeightStatus(
+            items.last,
+            stable: items.every((element) => element == items.last),
+          ),
         );
 
     _weights = weights;
