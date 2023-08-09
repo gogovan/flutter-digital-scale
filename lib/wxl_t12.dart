@@ -11,9 +11,8 @@ import 'package:rxdart/rxdart.dart';
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
   static const String _bluetoothName = 'WXL-T12.4.0';
-  static const String _serviceUuid = '0000ffe0-0000-1000-8000-00805f9b34fb';
-  static const String _characteristicUuid =
-      '0000ffe1-0000-1000-8000-00805f9b34fb';
+  static const String _refServiceUuid = 'ffe0';
+  static const String _refCharacteristicUuid = 'ffe1';
 
   final BluetoothSearcher _btSearcher = BluetoothSearcher();
   BluetoothDevice? _btDevice;
@@ -47,9 +46,9 @@ class WXLT12 implements DigitalScaleInterface {
           final services = await btDevice.getServices();
           final service = services.where(
             (s) =>
-                s.serviceId == _serviceUuid &&
+                s.serviceId.contains(_refServiceUuid) &&
                 s.characteristics
-                    .any((c) => c.characteristicId == _characteristicUuid),
+                    .any((c) => c.characteristicId.contains(_refCharacteristicUuid)),
           );
 
           if (service.isNotEmpty) {
@@ -58,7 +57,7 @@ class WXLT12 implements DigitalScaleInterface {
             _btDevice = btDevice;
             _btCharacteristic = selectedService.characteristics
                 .where(
-                  (element) => element.characteristicId == _characteristicUuid,
+                  (element) => element.characteristicId.contains(_refCharacteristicUuid),
                 )
                 .first;
 
@@ -74,6 +73,7 @@ class WXLT12 implements DigitalScaleInterface {
   @override
   Future<void> disconnect() async {
     await _searchedDevices?.cancel();
+    await _btDevice?.disconnect();
     _btDevice = null;
     _btCharacteristic = null;
     _connected = false;
@@ -107,7 +107,7 @@ class WXLT12 implements DigitalScaleInterface {
     }
 
     final weights = device
-        .readAsStream(_serviceUuid, _characteristicUuid)
+        .readAsStream(characteristic.serviceId, characteristic.characteristicId)
         .asBroadcastStream()
         .map((event) {
           final str = String.fromCharCodes(event);
