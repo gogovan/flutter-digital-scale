@@ -64,7 +64,6 @@ class WXLT12 implements DigitalScaleInterface {
                 .first;
 
             _connected = true;
-            await _searchedDevices?.cancel();
 
             completer.complete();
           }

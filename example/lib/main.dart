@@ -84,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
             '${snapshot.data}',
           ),
         ),
-        ElevatedButton(onPressed: _connectPrinter, child: Text('Disconnect')),
+        ElevatedButton(onPressed: _disconnectPrinter, child: Text('Disconnect')),
       ]),
     );
   }
