@@ -14,7 +14,6 @@ class WXLT12 implements DigitalScaleInterface {
   static const String _refServiceUuid = 'ffe0';
   static const String _refCharacteristicUuid = 'ffe1';
 
-  final BluetoothSearcher _btSearcher = BluetoothSearcher();
   BluetoothDevice? _btDevice;
   BluetoothCharacteristic? _btCharacteristic;
 
@@ -28,16 +27,17 @@ class WXLT12 implements DigitalScaleInterface {
   bool _connected = false;
 
   @override
-  Future<void> connect(
-    void Function() onConnected,
-  ) async {
+  Future<void> connect() async {
+    final btSearcher = BluetoothSearcher();
+    final completer = Completer<void>();
+
     _searchedDevices =
-        _btSearcher.search().listen(cancelOnError: true, (event) async {
+        btSearcher.search().listen(cancelOnError: true, (event) async {
       final device = event.where((element) => element.name == _bluetoothName);
 
       if (device.isNotEmpty) {
         await _searchedDevices?.cancel();
-        final btDevice = BluetoothDevice(_btSearcher, device.first);
+        final btDevice = BluetoothDevice(btSearcher, device.first);
         if (await btDevice.connect()) {
           // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
           // ignore: avoid-ignoring-return-values, not needed.
@@ -64,18 +64,20 @@ class WXLT12 implements DigitalScaleInterface {
                 .first;
 
             _connected = true;
-            onConnected();
-            await _searchedDevices?.cancel();
+
+            completer.complete();
           }
         }
       }
     });
+
+    return completer.future;
   }
 
   @override
   Future<void> disconnect() async {
-    await _searchedDevices?.cancel();
     await _btDevice?.disconnect();
+    await _searchedDevices?.cancel();
     _btDevice = null;
     _btCharacteristic = null;
     _connected = false;

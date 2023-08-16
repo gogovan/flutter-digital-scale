@@ -31,21 +31,32 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final scale = WXLT12();
 
-  var status = 'Finding Digital scale...';
+  var status = 'Pending...';
   Stream<WeightStatus>? stream;
   Future<Weight>? stabilizedWeight;
 
-  @override
-  void initState() {
-    _connectPrinter();
+  Future<void> _connectPrinter() async {
+    setState(() {
+      status = 'Finding Digital scale...';
+    });
+
+    await scale.connect();
+
+    stream = scale.getWeightStream();
+    setState(() {
+      status = 'Digital scale connected';
+    });
   }
 
-  void _connectPrinter() {
-    scale.connect(() {
-      stream = scale.getWeightStream();
-      setState(() {
-        status = 'Digital scale connected';
-      });
+  Future<void> _disconnectPrinter() async {
+    setState(() {
+      status = 'Disconnecting Digital scale...';
+    });
+
+    await scale.disconnect();
+
+    setState(() {
+      status = 'Digital scale disconnected';
     });
   }
 
@@ -56,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text("Digital Scale Demo"),
       ),
       body: Column(children: [
+        ElevatedButton(onPressed: _connectPrinter, child: Text('Connect')),
         Text(status),
         Text('Current Weight'),
         StreamBuilder<WeightStatus>(
@@ -72,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
             '${snapshot.data}',
           ),
         ),
+        ElevatedButton(onPressed: _disconnectPrinter, child: Text('Disconnect')),
       ]),
     );
   }
