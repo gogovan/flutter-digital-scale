@@ -33,8 +33,6 @@ class WXLT12 implements DigitalScaleInterface {
 
   StreamSubscription<List<BluetoothResult>>? _searchedDevices;
 
-  Stream<WeightStatus>? _weights;
-
   /// Number of samples to collect until deciding that the weight is now stabilized.
   int threshold = 10;
 
@@ -105,7 +103,7 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {
-    final source = _weights ??= getWeightStream();
+    final source = getWeightStream();
     return source
         .firstWhere((element) => element.stable)
         .timeout(timeout)
@@ -114,7 +112,7 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<WeightStatus> getWeight() async {
-    final source = _weights ??= getWeightStream();
+    final source = getWeightStream();
 
     return source.first;
   }
@@ -147,12 +145,10 @@ class WXLT12 implements DigitalScaleInterface {
         .bufferCount(threshold, 1)
         .map(
           (items) => WeightStatus(
-            items.last,
-            stable: items.every((element) => element == items.last),
-          ),
+              items.last,
+              stable: items.every((element) => element == items.last),
+            ),
         );
-
-    _weights = weights;
 
     return weights;
   }

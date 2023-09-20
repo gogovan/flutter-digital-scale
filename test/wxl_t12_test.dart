@@ -4,6 +4,7 @@ import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
+import 'package:flutter_digital_scale/weight.dart';
 import 'package:flutter_digital_scale/wxl_t12.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -44,13 +45,93 @@ void main() {
         ),
       ],
     );
+    when(btDevice.readAsStream('ffe0', 'ffe1')).thenAnswer(
+      (realInvocation) => Stream.fromIterable(
+        [
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 54, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 54, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+          [83, 84, 44, 78, 84, 44, 43, 32, 32, 32, 52, 46, 49, 50, 107, 103],
+        ],
+      ),
+    );
 
-    test('connect success', () async {
+    test('connect/disconnect success', () async {
       final Completer<bool> completer = Completer();
       await wxlt12.connect(() {
         expect(wxlt12.isConnected(), true);
         completer.complete(true);
       });
+      expect(await completer.future.timeout(const Duration(seconds: 5)), true);
+
+      await wxlt12.disconnect();
+      expect(wxlt12.isConnected(), false);
+    });
+
+    test('getWeightStream', () async {
+      final Completer<bool> completer = Completer();
+      await wxlt12.connect(() {
+        expect(wxlt12.isConnected(), true);
+        expectLater(
+          wxlt12.getWeightStream(),
+          emitsInOrder([
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: false,
+            ),
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: false,
+            ),
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: true,
+            ),
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: true,
+            ),
+          ]),
+        );
+        completer.complete(true);
+      });
+
+      expect(await completer.future.timeout(const Duration(seconds: 5)), true);
+    });
+
+    test('getStabilizedWeight', () async {
+      final Completer<bool> completer = Completer();
+      await wxlt12.connect(() async {
+        expect(wxlt12.isConnected(), true);
+        expect(
+          await wxlt12.getStabilizedWeight(const Duration(seconds: 5)),
+          const Weight(4.12, WeightUnit.kilograms),
+        );
+        completer.complete(true);
+      });
+
+      expect(await completer.future.timeout(const Duration(seconds: 5)), true);
+    });
+
+    test('getWeight', () async {
+      final Completer<bool> completer = Completer();
+      await wxlt12.connect(() async {
+        expect(wxlt12.isConnected(), true);
+        expect(
+          await wxlt12.getWeight(),
+          const WeightStatus(Weight(4.12, WeightUnit.kilograms), stable: false),
+        );
+        completer.complete(true);
+      });
+
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
     });
   });
