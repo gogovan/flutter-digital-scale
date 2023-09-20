@@ -145,9 +145,9 @@ class WXLT12 implements DigitalScaleInterface {
         .bufferCount(threshold, 1)
         .map(
           (items) => WeightStatus(
-              items.last,
-              stable: items.every((element) => element == items.last),
-            ),
+            items.last,
+            stable: items.every((element) => element == items.last),
+          ),
         );
 
     return weights;

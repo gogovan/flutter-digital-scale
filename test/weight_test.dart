@@ -19,18 +19,49 @@ void main() {
     });
 
     test('equals', () {
-      expect(const Weight(3, WeightUnit.kilograms) == const Weight(3, WeightUnit.kilograms), true);
-      expect(const Weight(3, WeightUnit.kilograms) == const Weight(4, WeightUnit.kilograms), false);
-      expect(const Weight(3, WeightUnit.kilograms) == const Weight(3, WeightUnit.grams), false);
-      expect(const Weight(3, WeightUnit.kilograms) == const Weight(3000, WeightUnit.grams), false);
+      expect(
+        const Weight(3, WeightUnit.kilograms) ==
+            const Weight(3, WeightUnit.kilograms),
+        true,
+      );
+      expect(
+        const Weight(3, WeightUnit.kilograms) ==
+            const Weight(4, WeightUnit.kilograms),
+        false,
+      );
+      expect(
+        const Weight(3, WeightUnit.kilograms) ==
+            const Weight(3, WeightUnit.grams),
+        false,
+      );
+      expect(
+        const Weight(3, WeightUnit.kilograms) ==
+            const Weight(3000, WeightUnit.grams),
+        false,
+      );
     });
   });
 
   group('weightStatus', () {
     test('equals', () {
-      expect(const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) == const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true), true);
-      expect(const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) == const WeightStatus(Weight(5, WeightUnit.kilograms), stable: true), false);
-      expect(const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) == const WeightStatus(Weight(3, WeightUnit.kilograms), stable: false), false);
+      expect(
+        const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) ==
+            const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true),
+        true,
+      );
+      expect(
+        const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) ==
+            const WeightStatus(Weight(5, WeightUnit.kilograms), stable: true),
+        false,
+      );
+      expect(
+        const WeightStatus(Weight(3, WeightUnit.kilograms), stable: true) ==
+            const WeightStatus(
+              Weight(3, WeightUnit.kilograms),
+              stable: false,
+            ),
+        false,
+      );
     });
   });
 }
