@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
@@ -10,11 +11,23 @@ import 'package:rxdart/rxdart.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
+  WXLT12()
+      : _btSearcher = BluetoothSearcher(),
+        _btDeviceCreator = _createBTDevice;
+
+  @visibleForTesting
+  WXLT12.withMockComponents(this._btSearcher, this._btDeviceCreator);
+
   static const String _bluetoothName = 'WXL-T12.4.0';
   static const String _refServiceUuid = 'ffe0';
   static const String _refCharacteristicUuid = 'ffe1';
 
-  final BluetoothSearcher _btSearcher = BluetoothSearcher();
+  final BluetoothSearcher _btSearcher;
+  final BluetoothDevice Function(
+    BluetoothSearcher btSearcher,
+    BluetoothResult btResult,
+  ) _btDeviceCreator;
+
   BluetoothDevice? _btDevice;
   BluetoothCharacteristic? _btCharacteristic;
 
@@ -27,6 +40,12 @@ class WXLT12 implements DigitalScaleInterface {
 
   bool _connected = false;
 
+  static BluetoothDevice _createBTDevice(
+    BluetoothSearcher btSearcher,
+    BluetoothResult btResult,
+  ) =>
+      BluetoothDevice(btSearcher, btResult);
+
   @override
   Future<void> connect(
     void Function() onConnected,
@@ -37,7 +56,7 @@ class WXLT12 implements DigitalScaleInterface {
 
       if (device.isNotEmpty) {
         await _searchedDevices?.cancel();
-        final btDevice = BluetoothDevice(_btSearcher, device.first);
+        final btDevice = _btDeviceCreator(_btSearcher, device.first);
         if (await btDevice.connect()) {
           // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
           // ignore: avoid-ignoring-return-values, not needed.
