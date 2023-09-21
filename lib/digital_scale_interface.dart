@@ -4,7 +4,9 @@ import 'package:flutter_digital_scale/weight.dart';
 abstract class DigitalScaleInterface {
   /// Search and connect to a Digital scale.
   /// If multiple supported digital scales are found, only one of them will be connected.
-  Future<void> connect();
+  Future<void> connect(
+    void Function() onConnected,
+  );
 
   /// Disconnect from a connected Digital scale.
   Future<void> disconnect();

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
@@ -10,34 +11,50 @@ import 'package:rxdart/rxdart.dart';
 
 /// Interface a Wuxianliang WXL-T12 Digital Scale.
 class WXLT12 implements DigitalScaleInterface {
+  WXLT12()
+      : _btSearcher = BluetoothSearcher(),
+        _btDeviceCreator = _createBTDevice;
+
+  @visibleForTesting
+  WXLT12.withMockComponents(this._btSearcher, this._btDeviceCreator);
+
   static const String _bluetoothName = 'WXL-T12.4.0';
   static const String _refServiceUuid = 'ffe0';
   static const String _refCharacteristicUuid = 'ffe1';
+
+  final BluetoothSearcher _btSearcher;
+  final BluetoothDevice Function(
+    BluetoothSearcher btSearcher,
+    BluetoothResult btResult,
+  ) _btDeviceCreator;
 
   BluetoothDevice? _btDevice;
   BluetoothCharacteristic? _btCharacteristic;
 
   StreamSubscription<List<BluetoothResult>>? _searchedDevices;
 
-  Stream<WeightStatus>? _weights;
-
   /// Number of samples to collect until deciding that the weight is now stabilized.
   int threshold = 10;
 
   bool _connected = false;
 
-  @override
-  Future<void> connect() async {
-    final btSearcher = BluetoothSearcher();
-    final completer = Completer<void>();
+  static BluetoothDevice _createBTDevice(
+    BluetoothSearcher btSearcher,
+    BluetoothResult btResult,
+  ) =>
+      BluetoothDevice(btSearcher, btResult);
 
+  @override
+  Future<void> connect(
+    void Function() onConnected,
+  ) async {
     _searchedDevices =
-        btSearcher.search().listen(cancelOnError: true, (event) async {
+        _btSearcher.search().listen(cancelOnError: true, (event) async {
       final device = event.where((element) => element.name == _bluetoothName);
 
       if (device.isNotEmpty) {
         await _searchedDevices?.cancel();
-        final btDevice = BluetoothDevice(btSearcher, device.first);
+        final btDevice = _btDeviceCreator(_btSearcher, device.first);
         if (await btDevice.connect()) {
           // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
           // ignore: avoid-ignoring-return-values, not needed.
@@ -64,20 +81,18 @@ class WXLT12 implements DigitalScaleInterface {
                 .first;
 
             _connected = true;
-
-            completer.complete();
+            onConnected();
+            await _searchedDevices?.cancel();
           }
         }
       }
     });
-
-    return completer.future;
   }
 
   @override
   Future<void> disconnect() async {
-    await _btDevice?.disconnect();
     await _searchedDevices?.cancel();
+    await _btDevice?.disconnect();
     _btDevice = null;
     _btCharacteristic = null;
     _connected = false;
@@ -88,7 +103,7 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {
-    final source = _weights ??= getWeightStream();
+    final source = getWeightStream();
     return source
         .firstWhere((element) => element.stable)
         .timeout(timeout)
@@ -97,7 +112,7 @@ class WXLT12 implements DigitalScaleInterface {
 
   @override
   Future<WeightStatus> getWeight() async {
-    final source = _weights ??= getWeightStream();
+    final source = getWeightStream();
 
     return source.first;
   }
@@ -134,8 +149,6 @@ class WXLT12 implements DigitalScaleInterface {
             stable: items.every((element) => element == items.last),
           ),
         );
-
-    _weights = weights;
 
     return weights;
   }
