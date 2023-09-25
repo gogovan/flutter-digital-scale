@@ -16,7 +16,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          flutter pub get
+          ./setup.sh
 
       - name: run tests
         run: flutter test --coverage
