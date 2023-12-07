@@ -8,3 +8,7 @@ class DigitalScaleException extends IOException {
   @override
   String toString() => message;
 }
+
+class DigitalScaleConnectionException extends DigitalScaleException {
+  DigitalScaleConnectionException(super.message);
+}

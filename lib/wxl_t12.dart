@@ -94,7 +94,7 @@ class WXLT12 implements DigitalScaleInterface {
         }
       } else {
         return Future.error(
-          DigitalScaleException('Failed to connect to device'),
+          DigitalScaleConnectionException('Failed to connect to device'),
         );
       }
     });
