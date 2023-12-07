@@ -134,8 +134,10 @@ void main() {
           expect(wxlt12.isConnected(), true);
           expect(
             await wxlt12.getWeight(),
-            const WeightStatus(Weight(4.12, WeightUnit.kilograms),
-                stable: false),
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: false,
+            ),
           );
           completer.complete(true);
         },
