@@ -66,7 +66,7 @@ void main() {
 
     test('connect/disconnect success', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() {
+      await wxlt12.connect(onConnected: () {
         expect(wxlt12.isConnected(), true);
         completer.complete(true);
       });
@@ -78,7 +78,7 @@ void main() {
 
     test('getWeightStream', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() {
+      await wxlt12.connect(onConnected: () {
         expect(wxlt12.isConnected(), true);
         expectLater(
           wxlt12.getWeightStream(),
@@ -109,7 +109,7 @@ void main() {
 
     test('getStabilizedWeight', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() async {
+      await wxlt12.connect(onConnected: () async {
         expect(wxlt12.isConnected(), true);
         expect(
           await wxlt12.getStabilizedWeight(const Duration(seconds: 5)),
@@ -123,7 +123,7 @@ void main() {
 
     test('getWeight', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() async {
+      await wxlt12.connect(onConnected: () async {
         expect(wxlt12.isConnected(), true);
         expect(
           await wxlt12.getWeight(),
