@@ -5,6 +5,7 @@ import 'package:flutter_device_searcher/device/bluetooth/bluetooth_device.dart';
 import 'package:flutter_device_searcher/device/bluetooth/bluetooth_service.dart';
 import 'package:flutter_device_searcher/device_searcher/bluetooth_searcher.dart';
 import 'package:flutter_device_searcher/search_result/bluetooth_result.dart';
+import 'package:flutter_digital_scale/digital_scale_exception.dart';
 import 'package:flutter_digital_scale/digital_scale_interface.dart';
 import 'package:flutter_digital_scale/weight.dart';
 import 'package:rxdart/rxdart.dart';
@@ -31,7 +32,7 @@ class WXLT12 implements DigitalScaleInterface {
   BluetoothDevice? _btDevice;
   BluetoothCharacteristic? _btCharacteristic;
 
-  StreamSubscription<List<BluetoothResult>>? _searchedDevices;
+  StreamSubscription<Iterable<BluetoothResult>>? _searchedDevices;
 
   /// Number of samples to collect until deciding that the weight is now stabilized.
   int threshold = 10;
@@ -45,46 +46,56 @@ class WXLT12 implements DigitalScaleInterface {
       BluetoothDevice(btSearcher, btResult);
 
   @override
-  Future<void> connect(
-    void Function() onConnected,
-  ) async {
-    _searchedDevices =
-        _btSearcher.search().listen(cancelOnError: true, (event) async {
-      final device = event.where((element) => element.name == _bluetoothName);
+  Future<void> connect({
+    Duration timeout = Duration.zero,
+    required void Function() onConnected,
+  }) async {
+    final stream = _btSearcher
+        .search()
+        .map(
+          (event) => event.where((element) => element.name == _bluetoothName),
+        )
+        .where((event) => event.isNotEmpty);
+    if (timeout > Duration.zero) {
+      stream.timeout(timeout);
+    }
 
-      if (device.isNotEmpty) {
-        await _searchedDevices?.cancel();
-        final btDevice = _btDeviceCreator(_btSearcher, device.first);
-        if (await btDevice.connect()) {
-          // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
-          // ignore: avoid-ignoring-return-values, not needed.
-          await Future.delayed(const Duration(seconds: 1));
+    _searchedDevices = stream.listen(cancelOnError: true, (event) async {
+      await _searchedDevices?.cancel();
+      final btDevice = _btDeviceCreator(_btSearcher, event.first);
+      if (await btDevice.connect()) {
+        // 1 second delay added because otherwise getServices would fail with device already connected error. (Not sure why).
+        // ignore: avoid-ignoring-return-values, not needed.
+        await Future.delayed(const Duration(seconds: 1));
 
-          final services = await btDevice.getServices();
-          final service = services.where(
-            (s) =>
-                s.serviceId.contains(_refServiceUuid) &&
-                s.characteristics.any(
-                  (c) => c.characteristicId.contains(_refCharacteristicUuid),
-                ),
-          );
+        final services = await btDevice.getServices();
+        final service = services.where(
+          (s) =>
+              s.serviceId.contains(_refServiceUuid) &&
+              s.characteristics.any(
+                (c) => c.characteristicId.contains(_refCharacteristicUuid),
+              ),
+        );
 
-          if (service.isNotEmpty) {
-            final selectedService = service.first;
+        if (service.isNotEmpty) {
+          final selectedService = service.first;
 
-            _btDevice = btDevice;
-            _btCharacteristic = selectedService.characteristics
-                .where(
-                  (element) =>
-                      element.characteristicId.contains(_refCharacteristicUuid),
-                )
-                .first;
+          _btDevice = btDevice;
+          _btCharacteristic = selectedService.characteristics
+              .where(
+                (element) =>
+                    element.characteristicId.contains(_refCharacteristicUuid),
+              )
+              .first;
 
-            _connected = true;
-            onConnected();
-            await _searchedDevices?.cancel();
-          }
+          _connected = true;
+          onConnected();
+          await _searchedDevices?.cancel();
         }
+      } else {
+        return Future.error(
+          DigitalScaleConnectionException('Failed to connect to device'),
+        );
       }
     });
   }

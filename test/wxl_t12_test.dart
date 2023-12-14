@@ -66,10 +66,12 @@ void main() {
 
     test('connect/disconnect success', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() {
-        expect(wxlt12.isConnected(), true);
-        completer.complete(true);
-      });
+      await wxlt12.connect(
+        onConnected: () {
+          expect(wxlt12.isConnected(), true);
+          completer.complete(true);
+        },
+      );
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
 
       await wxlt12.disconnect();
@@ -78,59 +80,68 @@ void main() {
 
     test('getWeightStream', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() {
-        expect(wxlt12.isConnected(), true);
-        expectLater(
-          wxlt12.getWeightStream(),
-          emitsInOrder([
-            const WeightStatus(
-              Weight(4.12, WeightUnit.kilograms),
-              stable: false,
-            ),
-            const WeightStatus(
-              Weight(4.12, WeightUnit.kilograms),
-              stable: false,
-            ),
-            const WeightStatus(
-              Weight(4.12, WeightUnit.kilograms),
-              stable: true,
-            ),
-            const WeightStatus(
-              Weight(4.12, WeightUnit.kilograms),
-              stable: true,
-            ),
-          ]),
-        );
-        completer.complete(true);
-      });
+      await wxlt12.connect(
+        onConnected: () {
+          expect(wxlt12.isConnected(), true);
+          expectLater(
+            wxlt12.getWeightStream(),
+            emitsInOrder([
+              const WeightStatus(
+                Weight(4.12, WeightUnit.kilograms),
+                stable: false,
+              ),
+              const WeightStatus(
+                Weight(4.12, WeightUnit.kilograms),
+                stable: false,
+              ),
+              const WeightStatus(
+                Weight(4.12, WeightUnit.kilograms),
+                stable: true,
+              ),
+              const WeightStatus(
+                Weight(4.12, WeightUnit.kilograms),
+                stable: true,
+              ),
+            ]),
+          );
+          completer.complete(true);
+        },
+      );
 
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
     });
 
     test('getStabilizedWeight', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() async {
-        expect(wxlt12.isConnected(), true);
-        expect(
-          await wxlt12.getStabilizedWeight(const Duration(seconds: 5)),
-          const Weight(4.12, WeightUnit.kilograms),
-        );
-        completer.complete(true);
-      });
+      await wxlt12.connect(
+        onConnected: () async {
+          expect(wxlt12.isConnected(), true);
+          expect(
+            await wxlt12.getStabilizedWeight(const Duration(seconds: 5)),
+            const Weight(4.12, WeightUnit.kilograms),
+          );
+          completer.complete(true);
+        },
+      );
 
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
     });
 
     test('getWeight', () async {
       final Completer<bool> completer = Completer();
-      await wxlt12.connect(() async {
-        expect(wxlt12.isConnected(), true);
-        expect(
-          await wxlt12.getWeight(),
-          const WeightStatus(Weight(4.12, WeightUnit.kilograms), stable: false),
-        );
-        completer.complete(true);
-      });
+      await wxlt12.connect(
+        onConnected: () async {
+          expect(wxlt12.isConnected(), true);
+          expect(
+            await wxlt12.getWeight(),
+            const WeightStatus(
+              Weight(4.12, WeightUnit.kilograms),
+              stable: false,
+            ),
+          );
+          completer.complete(true);
+        },
+      );
 
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
     });
