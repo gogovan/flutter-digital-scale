@@ -51,14 +51,11 @@ class WXLT12 implements DigitalScaleInterface {
     required void Function() onConnected,
   }) async {
     final stream = _btSearcher
-        .search()
+        .search(timeout: timeout)
         .map(
           (event) => event.where((element) => element.name == _bluetoothName),
         )
         .where((event) => event.isNotEmpty);
-    if (timeout > Duration.zero) {
-      stream.timeout(timeout);
-    }
 
     _searchedDevices = stream.listen(cancelOnError: true, (event) async {
       await _searchedDevices?.cancel();
