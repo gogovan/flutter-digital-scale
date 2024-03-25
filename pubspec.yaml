@@ -15,7 +15,7 @@ dependencies:
   flutter_device_searcher:
     git:
       url: https://github.com/gogovan/flutter-device-searcher.git
-      ref: feat/EPT-3589
+      ref: feat/EPT-3847
   rxdart: ^0.27.7
   build_runner: ^2.4.6
 

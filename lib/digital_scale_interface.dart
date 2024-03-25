@@ -14,6 +14,8 @@ abstract class DigitalScaleInterface {
 
   bool isConnected();
 
+  Stream<bool> connectStateStream();
+
   /// Get the instantaneous weight value and status from the digital scale.
   /// However, in typical usage you would likely want to use `getStabilizedWeight()` instead.
   Future<WeightStatus> getWeight();
