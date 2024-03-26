@@ -31,4 +31,7 @@ abstract class DigitalScaleInterface {
 
   /// Continuously measure the weight and return the values as a Dart Stream.
   Stream<WeightStatus> getWeightStream();
+
+  /// Dispose the resources used by the Digital Scale.
+  Future<void> dispose();
 }

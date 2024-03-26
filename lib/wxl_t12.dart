@@ -161,4 +161,9 @@ class WXLT12 implements DigitalScaleInterface {
 
     return weights;
   }
+
+  @override
+  Future<void> dispose() async {
+    await _btDevice?.dispose();
+  }
 }
