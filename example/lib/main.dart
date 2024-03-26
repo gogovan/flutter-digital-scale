@@ -41,10 +41,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _connectPrinter() {
-    scale.connect(() {
+    scale.connect(onConnected: () {
       stream = scale.getWeightStream();
       setState(() {
         status = 'Digital scale connected';
+      });
+
+      scale.connectStateStream().listen((event) {
+        final statusString = event ? 'connected' : 'disconnected';
+        setState(() {
+          status = 'Digital scale $statusString';
+        });
       });
     });
   }
