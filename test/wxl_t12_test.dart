@@ -38,6 +38,7 @@ void main() {
     );
     when(btDevice.connect()).thenAnswer((realInvocation) async => true);
     when(btDevice.isConnected()).thenAnswer((realInvocation) => true);
+    when(btDevice.connectStateStream()).thenAnswer((realInvocation) => Stream.value(true));
     when(btDevice.getServices()).thenAnswer(
       (realInvocation) async => [
         const BluetoothService(
@@ -79,6 +80,7 @@ void main() {
         },
       );
       expect(await completer.future.timeout(const Duration(seconds: 5)), true);
+      expect(await wxlt12.connectStateStream().toList(), [true]);
 
       await wxlt12.disconnect();
       expect(wxlt12.isConnected(), false);
