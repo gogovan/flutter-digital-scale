@@ -107,7 +107,8 @@ class WXLT12 implements DigitalScaleInterface {
   bool isConnected() => _btDevice?.isConnected() ?? false;
 
   @override
-  Stream<bool> connectStateStream() => _btDevice?.connectStateStream() ?? Stream.value(false);
+  Stream<bool> connectStateStream() =>
+      _btDevice?.connectStateStream() ?? Stream.value(false);
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {
