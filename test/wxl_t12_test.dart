@@ -22,7 +22,12 @@ void main() {
   final wxlt12 = WXLT12.withMockComponents(btSearcher, (_, __) => btDevice);
 
   group('connect', () {
-    when(btSearcher.search()).thenAnswer(
+    when(
+      btSearcher.search(
+        timeout: anyNamed('timeout'),
+        onTimeout: anyNamed('onTimeout'),
+      ),
+    ).thenAnswer(
       (realInvocation) => Stream.value([
         const BluetoothResult(
           id: 'EFA192CD',
@@ -32,6 +37,7 @@ void main() {
       ]),
     );
     when(btDevice.connect()).thenAnswer((realInvocation) async => true);
+    when(btDevice.isConnected()).thenAnswer((realInvocation) => true);
     when(btDevice.getServices()).thenAnswer(
       (realInvocation) async => [
         const BluetoothService(
