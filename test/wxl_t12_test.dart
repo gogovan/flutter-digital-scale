@@ -38,7 +38,8 @@ void main() {
     );
     when(btDevice.connect()).thenAnswer((realInvocation) async => true);
     when(btDevice.isConnected()).thenAnswer((realInvocation) => true);
-    when(btDevice.connectStateStream()).thenAnswer((realInvocation) => Stream.value(true));
+    when(btDevice.connectStateStream())
+        .thenAnswer((realInvocation) => Stream.value(true));
     when(btDevice.getServices()).thenAnswer(
       (realInvocation) async => [
         const BluetoothService(
