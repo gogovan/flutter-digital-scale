@@ -14,6 +14,8 @@ abstract class DigitalScaleInterface {
 
   bool isConnected();
 
+  Stream<bool> connectStateStream();
+
   /// Get the instantaneous weight value and status from the digital scale.
   /// However, in typical usage you would likely want to use `getStabilizedWeight()` instead.
   Future<WeightStatus> getWeight();
@@ -29,4 +31,7 @@ abstract class DigitalScaleInterface {
 
   /// Continuously measure the weight and return the values as a Dart Stream.
   Stream<WeightStatus> getWeightStream();
+
+  /// Dispose the resources used by the Digital Scale.
+  Future<void> dispose();
 }

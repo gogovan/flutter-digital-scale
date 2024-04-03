@@ -37,8 +37,6 @@ class WXLT12 implements DigitalScaleInterface {
   /// Number of samples to collect until deciding that the weight is now stabilized.
   int threshold = 10;
 
-  bool _connected = false;
-
   static BluetoothDevice _createBTDevice(
     BluetoothSearcher btSearcher,
     BluetoothResult btResult,
@@ -86,7 +84,6 @@ class WXLT12 implements DigitalScaleInterface {
               )
               .first;
 
-          _connected = true;
           onConnected();
           await _searchedDevices?.cancel();
         }
@@ -104,11 +101,14 @@ class WXLT12 implements DigitalScaleInterface {
     await _btDevice?.disconnect();
     _btDevice = null;
     _btCharacteristic = null;
-    _connected = false;
   }
 
   @override
-  bool isConnected() => _connected;
+  bool isConnected() => _btDevice?.isConnected() ?? false;
+
+  @override
+  Stream<bool> connectStateStream() =>
+      _btDevice?.connectStateStream() ?? Stream.value(false);
 
   @override
   Future<Weight> getStabilizedWeight(Duration timeout) async {
@@ -160,5 +160,10 @@ class WXLT12 implements DigitalScaleInterface {
         );
 
     return weights;
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _btDevice?.dispose();
   }
 }
